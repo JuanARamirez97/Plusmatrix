@@ -58,27 +58,58 @@ int main(int argc, char* argv[]) {
     for (int i = 1; i < argc; i++) {
         std::string arg = argv[i];
         
+        if (arg == "-h" || arg == "--help") {
+            std::cout << R"(Usage: plusmatrix [options]
+    Options:
+    -h, --help Show this help message
+    -c <color> Change the color of the rain                
+    
+    Available Colors:
+    - green (Default)
+    - red
+    - blue
+    - cyan
+    - magenta
+    - yellow
+    - white)" <<std::endl;
+            
+            return 0;
+        }
+
         // Check if the user passed the -c (color) flag
-        if (arg == "-c" && i + 1 < argc) {
-            std::string colorArg = argv[i + 1];
-            bool colorFound = false;
-            
-            // Look for the requested color in our struct
-            for (const auto& colorOpt : COLORS_AVAILABLE) {
-                if (colorOpt.name == colorArg) {
-                    selectedColor = colorOpt.code;
-                    colorFound = true;
-                    break;
+        else if (arg == "-c") {
+            if (i + 1 < argc) {
+                std::string colorArg = argv[i + 1];
+                bool colorFound = false;
+
+                // Look for the requested color in our struct
+                for (const auto& colorOpt : COLORS_AVAILABLE) {
+                    if (colorOpt.name == colorArg) {
+                        selectedColor = colorOpt.code;
+                        colorFound = true;
+                        break;
+                    }
                 }
-            }
-            
-            // Handle invalid color inputs
-            if (!colorFound) {
-                std::cerr << "Invalid color: " << colorArg << "\n";
-                std::cerr << "Available colors: green, red, blue, cyan, magenta, yellow, white\n";
+
+                // Handle invalid color inputs
+                if (!colorFound) {
+                    std::cerr << "Invalid color: " << colorArg << "\n";
+                    std::cerr << "Available colors: green, red, blue, cyan, magenta, yellow, white\n";
+                    return 1; // Exit with error
+                }
+                i++; // Skip the color name argument
+            } else {
+                std::cerr << "Error: Missing color argument after '-c'\n";
+                std::cerr << "Use 'plusmatrix -h' for help.\n";
                 return 1; // Exit with error
             }
-            i++; // Skip the color name argument
+        }
+
+        // Handle completely unknown arguments
+        else {
+            std::cerr << "Error: Unknown argument '" << arg << "'\n";
+            std::cerr << "Use 'plusmatrix -h' to show command options.\n";
+            return 1; // Exit with error
         }
     }
 
