@@ -51,8 +51,9 @@ void initDrops(std::vector<Drop>& drops, int maxX, int maxY) {
 }
 
 int main(int argc, char* argv[]) {
-    // Default Color is green
+    // Default values
     short selectedColor = COLOR_GREEN;
+    int ms = 25;
 
     // Command line argument parsing
     for (int i = 1; i < argc; i++) {
@@ -63,7 +64,8 @@ int main(int argc, char* argv[]) {
     Options:
     -h, --help Show this help message
     -c <color> Change the color of the rain                
-    
+    -f <ms> Set frame delay in milliseconds (default: 25, lower = faster)
+
     Available Colors:
     - green (Default)
     - red
@@ -102,6 +104,35 @@ int main(int argc, char* argv[]) {
                 std::cerr << "Error: Missing color argument after '-c'\n";
                 std::cerr << "Use 'plusmatrix -h' for help.\n";
                 return 1; // Exit with error
+            }
+        }
+
+        // Check if the user passed the -f (miliseconds) flag
+        else if (arg == "-f") {
+            if (i + 1 < argc) {
+                try {
+                    ms = std::stoi(argv[i + 1]);
+                    // If ms are too small or negative
+                    if (ms <= 0) {
+                        std::cerr << "Error: Miliseconds must be positive\n";
+                        return 1;
+                    }
+                    // If ms are too big
+                    if (ms > 1000) {
+                        ms = 1000;
+                    }
+                    i++;
+                } catch (const std::invalid_argument & e) {
+                    std::cerr << "Error: Invalid number format after '-f'\n";
+                    return 1;
+                } catch (const std::out_of_range& e) {
+                    std::cerr << "Error: Number too large or too small\n";
+                    return 1;
+                }
+            } else {
+                std::cerr << "Error: Missing number argument after '-f'\n";
+                std::cerr << "Use 'plusmatrix -h' for help.\n";
+                return 1;
             }
         }
 
@@ -198,9 +229,9 @@ int main(int argc, char* argv[]) {
             }
         }
 
-        // Render changes and wait 25 milliseconds (Frame rate control)
+        // Render changes and wait 25 milliseconds default (Frame rate control)
         refresh();
-        napms(25);
+        napms(ms);
     }
 
     // Clean up curses environment before exiting
