@@ -51,34 +51,96 @@ void initDrops(std::vector<Drop>& drops, int maxX, int maxY) {
 }
 
 int main(int argc, char* argv[]) {
-    // Default Color is green
+    // Default values
     short selectedColor = COLOR_GREEN;
+    int ms = 25;
 
     // Command line argument parsing
     for (int i = 1; i < argc; i++) {
         std::string arg = argv[i];
         
+        if (arg == "-h" || arg == "--help") {
+            std::cout << R"(Usage: plusmatrix [options]
+    Options:
+    -h, --help Show this help message
+    -c <color> Change the color of the rain                
+    -f <ms> Set frame delay in milliseconds (default: 25, lower = faster)
+
+    Available Colors:
+    - green (Default)
+    - red
+    - blue
+    - cyan
+    - magenta
+    - yellow
+    - white)" <<std::endl;
+            
+            return 0;
+        }
+
         // Check if the user passed the -c (color) flag
-        if (arg == "-c" && i + 1 < argc) {
-            std::string colorArg = argv[i + 1];
-            bool colorFound = false;
-            
-            // Look for the requested color in our struct
-            for (const auto& colorOpt : COLORS_AVAILABLE) {
-                if (colorOpt.name == colorArg) {
-                    selectedColor = colorOpt.code;
-                    colorFound = true;
-                    break;
+        else if (arg == "-c") {
+            if (i + 1 < argc) {
+                std::string colorArg = argv[i + 1];
+                bool colorFound = false;
+
+                // Look for the requested color in our struct
+                for (const auto& colorOpt : COLORS_AVAILABLE) {
+                    if (colorOpt.name == colorArg) {
+                        selectedColor = colorOpt.code;
+                        colorFound = true;
+                        break;
+                    }
                 }
-            }
-            
-            // Handle invalid color inputs
-            if (!colorFound) {
-                std::cerr << "Invalid color: " << colorArg << "\n";
-                std::cerr << "Available colors: green, red, blue, cyan, magenta, yellow, white\n";
+
+                // Handle invalid color inputs
+                if (!colorFound) {
+                    std::cerr << "Invalid color: " << colorArg << "\n";
+                    std::cerr << "Available colors: green, red, blue, cyan, magenta, yellow, white\n";
+                    return 1; // Exit with error
+                }
+                i++; // Skip the color name argument
+            } else {
+                std::cerr << "Error: Missing color argument after '-c'\n";
+                std::cerr << "Use 'plusmatrix -h' for help.\n";
                 return 1; // Exit with error
             }
-            i++; // Skip the color name argument
+        }
+
+        // Check if the user passed the -f (miliseconds) flag
+        else if (arg == "-f") {
+            if (i + 1 < argc) {
+                try {
+                    ms = std::stoi(argv[i + 1]);
+                    // If ms are too small or negative
+                    if (ms <= 0) {
+                        std::cerr << "Error: Miliseconds must be positive\n";
+                        return 1;
+                    }
+                    // If ms are too big
+                    if (ms > 1000) {
+                        ms = 1000;
+                    }
+                    i++;
+                } catch (const std::invalid_argument & e) {
+                    std::cerr << "Error: Invalid number format after '-f'\n";
+                    return 1;
+                } catch (const std::out_of_range& e) {
+                    std::cerr << "Error: Number too large or too small\n";
+                    return 1;
+                }
+            } else {
+                std::cerr << "Error: Missing number argument after '-f'\n";
+                std::cerr << "Use 'plusmatrix -h' for help.\n";
+                return 1;
+            }
+        }
+
+        // Handle completely unknown arguments
+        else {
+            std::cerr << "Error: Unknown argument '" << arg << "'\n";
+            std::cerr << "Use 'plusmatrix -h' to show command options.\n";
+            return 1; // Exit with error
         }
     }
 
@@ -167,9 +229,9 @@ int main(int argc, char* argv[]) {
             }
         }
 
-        // Render changes and wait 25 milliseconds (Frame rate control)
+        // Render changes and wait 25 milliseconds default (Frame rate control)
         refresh();
-        napms(25);
+        napms(ms);
     }
 
     // Clean up curses environment before exiting
