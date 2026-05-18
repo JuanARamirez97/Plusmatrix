@@ -60,3 +60,13 @@ include(GNUInstallDirs)
 install(TARGETS plusmatrix
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
+
+# ==========================================
+# Autocomplete
+# ==========================================
+
+# We define the path where the autocomplete scripts are saved.
+install(FILES plusmatrix-completion.bash
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/bash-completion/completions
+    RENAME plusmatrix
+)
